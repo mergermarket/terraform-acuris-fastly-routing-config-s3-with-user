@@ -64,13 +64,13 @@ resource "aws_secretsmanager_secret_version" "secret_access_key" {
 data "aws_secretsmanager_secret_version" "access_key_id" {
   secret_id = "${aws_secretsmanager_secret.access_key_id.id}"
 
-  depends_on = ["aws_secretsmanager_secret.access_key_id"]
+  depends_on = ["aws_secretsmanager_secret_version.access_key_id"]
 }
 
 data "aws_secretsmanager_secret_version" "secret_access_key" {
   secret_id = "${aws_secretsmanager_secret.secret_access_key.id}"
 
-  depends_on = ["aws_secretsmanager_secret.secret_access_key"]
+  depends_on = ["aws_secretsmanager_secret_version.secret_access_key"]
 }
 
 module "acuris_assets_config" {
