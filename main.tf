@@ -1,13 +1,13 @@
 locals {
-  name = "${var.user_name}"
+  name = var.user_name
 }
 
 resource "aws_iam_user" "user" {
-  name = "${local.name}"
+  name = local.name
 }
 
 resource "aws_iam_access_key" "key" {
-  user = "${aws_iam_user.user.name}"
+  user = aws_iam_user.user.name
 }
 
 data "aws_iam_policy_document" "policy_document" {
@@ -38,9 +38,9 @@ data "aws_iam_policy_document" "policy_document" {
 }
 
 resource "aws_iam_user_policy" "user_policy" {
-  name   = "${local.name}"
-  user   = "${aws_iam_user.user.name}"
-  policy = "${data.aws_iam_policy_document.policy_document.json}"
+  name   = local.name
+  user   = aws_iam_user.user.name
+  policy = data.aws_iam_policy_document.policy_document.json
 }
 
 resource "aws_secretsmanager_secret" "access_key_id" {
@@ -48,8 +48,8 @@ resource "aws_secretsmanager_secret" "access_key_id" {
 }
 
 resource "aws_secretsmanager_secret_version" "access_key_id" {
-  secret_id     = "${aws_secretsmanager_secret.access_key_id.id}"
-  secret_string = "${aws_iam_access_key.key.id}"
+  secret_id     = aws_secretsmanager_secret.access_key_id.id
+  secret_string = aws_iam_access_key.key.id
 }
 
 resource "aws_secretsmanager_secret" "secret_access_key" {
@@ -57,28 +57,29 @@ resource "aws_secretsmanager_secret" "secret_access_key" {
 }
 
 resource "aws_secretsmanager_secret_version" "secret_access_key" {
-  secret_id     = "${aws_secretsmanager_secret.secret_access_key.id}"
-  secret_string = "${aws_iam_access_key.key.secret}"
+  secret_id     = aws_secretsmanager_secret.secret_access_key.id
+  secret_string = aws_iam_access_key.key.secret
 }
 
 data "aws_secretsmanager_secret_version" "access_key_id" {
-  secret_id = "${aws_secretsmanager_secret.access_key_id.id}"
+  secret_id = aws_secretsmanager_secret.access_key_id.id
 
-  depends_on = ["aws_secretsmanager_secret_version.access_key_id"]
+  depends_on = [aws_secretsmanager_secret_version.access_key_id]
 }
 
 data "aws_secretsmanager_secret_version" "secret_access_key" {
-  secret_id = "${aws_secretsmanager_secret.secret_access_key.id}"
+  secret_id = aws_secretsmanager_secret.secret_access_key.id
 
-  depends_on = ["aws_secretsmanager_secret_version.secret_access_key"]
+  depends_on = [aws_secretsmanager_secret_version.secret_access_key]
 }
 
 module "acuris_assets_config" {
-  source = "github.com/mergermarket/tf_fastly_routing_config_s3"
+  source = "github.com/mergermarket/terraform-acuris-fastly-routing-config-s3"
 
-  vcl_recv_condition    = "${var.vcl_recv_condition}"
-  backend_name          = "${var.backend_name}"
-  s3_bucket_name        = "${var.s3_bucket_name}"
-  aws_access_key_id     = "${data.aws_secretsmanager_secret_version.access_key_id.secret_string}"
-  aws_secret_access_key = "${data.aws_secretsmanager_secret_version.secret_access_key.secret_string}"
+  vcl_recv_condition    = var.vcl_recv_condition
+  backend_name          = var.backend_name
+  s3_bucket_name        = var.s3_bucket_name
+  aws_access_key_id     = data.aws_secretsmanager_secret_version.access_key_id.secret_string
+  aws_secret_access_key = data.aws_secretsmanager_secret_version.secret_access_key.secret_string
 }
+
