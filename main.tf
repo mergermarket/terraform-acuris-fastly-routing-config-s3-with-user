@@ -74,7 +74,7 @@ data "aws_secretsmanager_secret_version" "secret_access_key" {
 }
 
 module "acuris_assets_config" {
-  source = "github.com/mergermarket/terraform-acuris-fastly-routing-config-s3"
+  source = "mergermarket/fastly-routing-config-s3/acuris"
 
   vcl_recv_condition    = var.vcl_recv_condition
   backend_name          = var.backend_name
